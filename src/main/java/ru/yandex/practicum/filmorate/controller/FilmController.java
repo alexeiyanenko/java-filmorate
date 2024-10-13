@@ -27,7 +27,6 @@ public class FilmController {
 
     @PostMapping
     public ResponseEntity<Film> addFilm(@Valid @RequestBody Film film) {
-        validateReleaseDate(film);
         film.setId(currentId++);
         films.put(film.getId(), film);
         log.info("Фильм добавлен: {}", film);
@@ -36,7 +35,6 @@ public class FilmController {
 
     @PutMapping
     public ResponseEntity<Object> updateFilm(@Valid @RequestBody Film updatedFilm) {
-        validateReleaseDate(updatedFilm);
         if (films.containsKey(updatedFilm.getId())) {
             films.put(updatedFilm.getId(), updatedFilm);
             log.info("Фильм обновлён: {}", updatedFilm);
@@ -49,13 +47,6 @@ public class FilmController {
 
     @GetMapping
     public ResponseEntity<List<Film>> getAllFilms() {
-        List<Film> userList = films.values().stream().collect(Collectors.toList());
-        return ResponseEntity.ok(userList);
-    }
-
-    private void validateReleaseDate(Film film) {
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года.");
-        }
+        return ResponseEntity.ok(List.copyOf(films.values()));
     }
 }

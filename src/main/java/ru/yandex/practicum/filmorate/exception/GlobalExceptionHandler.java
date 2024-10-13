@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
                         (existing, replacement) -> existing // При конфликте оставляем первое сообщение
                 ));
 
-        log.error("Ошибка валидации (400 BAD REQUEST): {}", errors);
+        log.error("Произошла ошибка валидации (400 BAD REQUEST): {}", errors);
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
@@ -38,16 +38,9 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex) {
-        log.error("Ошибка времени выполнения (500 INTERNAL SERVER ERROR): {}", ex.getMessage(), ex);
-        ErrorResponse errorResponse = new ErrorResponse("Произошла ошибка.");
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
-        log.error("Общая ошибка (500 INTERNAL SERVER ERROR): {}", ex.getMessage(), ex);
+    public ResponseEntity<ErrorResponse> handleException(Exception ex) {
+        log.error("Произошла ошибка (500 INTERNAL SERVER ERROR): {}", ex.getMessage(), ex);
         ErrorResponse errorResponse = new ErrorResponse("Произошла ошибка.");
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
