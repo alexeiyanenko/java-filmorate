@@ -7,14 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
-import java.util.stream.Collectors;
 
-
-import ru.yandex.practicum.filmorate.validation.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 @Slf4j
