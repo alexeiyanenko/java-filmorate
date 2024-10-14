@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import ru.yandex.practicum.filmorate.controller.ErrorResponse;
+
 import ru.yandex.practicum.filmorate.validation.ValidationException;
 
 import java.util.Map;
@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.toMap(
                         error -> error.getField(),
                         error -> error.getDefaultMessage(),
-                        (existing, replacement) -> existing // При конфликте оставляем первое сообщение
+                        (existing, replacement) -> existing
                 ));
 
         log.error("Произошла ошибка валидации (400 BAD REQUEST): {}", errors);
@@ -36,6 +36,13 @@ public class GlobalExceptionHandler {
         log.error("Произошла ошибка валидации (400 BAD REQUEST): {}", ex.getMessage(), ex);
         ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFoundException(NotFoundException ex) {
+        log.error("Объект не найден (404 NOT FOUND): {}", ex.getMessage(), ex);
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)
