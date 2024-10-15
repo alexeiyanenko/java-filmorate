@@ -1,26 +1,29 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
-import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class InMemoryFilmStorage implements FilmStorage {
 
     private int currentId = 1;
     private final Map<Integer, Film> films = new HashMap<>();
+    private final UserStorage userStorage;
 
     @Override
-    public Film addFilm(@Valid @RequestBody Film film) {
+    public Film addFilm(Film film) {
         film.setId(currentId++);
         films.put(film.getId(), film);
         log.info("Фильм добавлен: {}", film);
@@ -28,7 +31,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film updateFilm(@Valid @RequestBody Film updatedFilm) {
+    public Film updateFilm(Film updatedFilm) {
         if (!films.containsKey(updatedFilm.getId())) {
             log.warn("Фильм с ID {} не найден для обновления.", updatedFilm.getId());
             throw new NotFoundException("Фильм с ID " + updatedFilm.getId() + " не найден.");
@@ -39,21 +42,21 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film getById(Integer id) {
+    public Optional<Film> getById(Integer id) {
         if (id == null) {
             throw new IllegalArgumentException("ID не может быть null.");
         }
 
-        Film film = films.get(id);
-        if (film == null) {
-            throw new NotFoundException("Фильм с ID " + id + " не найден.");
-        }
-
-        return film;
+        return Optional.ofNullable(films.get(id));
     }
 
     @Override
     public List<Film> getAllFilms() {
         return List.copyOf(films.values());
+    }
+
+    @Override
+    public boolean isUserExist(int id) {
+        return userStorage.isUserExist(id);
     }
 }
