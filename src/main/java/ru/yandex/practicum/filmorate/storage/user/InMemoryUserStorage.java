@@ -46,7 +46,7 @@ public class InMemoryUserStorage implements UserStorage {
     public Set<Integer> getFriendsIDs(int id) {
         return getById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + id + " не найден."))
-                .getFriendsIDs();
+                .getFriendsIDs().keySet();
     }
 
     @Override

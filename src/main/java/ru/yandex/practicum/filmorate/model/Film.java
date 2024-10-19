@@ -18,6 +18,10 @@ public class Film {
     @NotBlank(message = "Название фильма не может быть пустым.")
     private String name;
 
+    private Set<Genre> genres = new HashSet<>();
+
+    private MPA rating;
+
     @NotNull(message = "Описание не может быть пустым.")
     @Size(max = 200, message = "Максимальная длина описания — 200 символов.")
     private String description;
@@ -41,5 +45,22 @@ public class Film {
 
     public int getLikesCount() {
         return likes.size();
+    }
+
+    public enum Genre {
+        COMEDY,
+        DRAMA,
+        ANIMATION,
+        THRILLER,
+        DOCUMENTARY,
+        ACTION
+    }
+
+    public enum MPA {
+        G,       // нет возрастных ограничений
+        PG,      // детям рекомендуется смотреть с родителями
+        PG_13,   // не рекомендуется детям до 13 лет
+        R,       // до 17 лет в присутствии взрослого
+        NC_17    // просмотр запрещён до 18 лет
     }
 }
