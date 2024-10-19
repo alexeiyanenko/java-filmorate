@@ -8,8 +8,8 @@ import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 public class User {
@@ -29,10 +29,21 @@ public class User {
     @PastOrPresent(message = "Дата рождения не может быть в будущем.")
     private LocalDate birthday;
 
-    private final Set<Integer> friendsIDs = new HashSet<>();
+    private final Map<Integer, FriendshipStatus> friendsIDs = new HashMap<>();
 
-    public void addFriend(int id) {
-        friendsIDs.add(id);
+    public void addFriend(int friendId) {
+        friendsIDs.put(friendId, FriendshipStatus.UNCONFIRMED);
+    }
+
+    public void confirmFriendship(int friendId) {
+        if (friendsIDs.containsKey(friendId)) {
+            friendsIDs.put(friendId, FriendshipStatus.CONFIRMED);
+        }
+    }
+
+    public enum FriendshipStatus {
+        UNCONFIRMED,
+        CONFIRMED
     }
 
     public void removeFriend(int id) {
