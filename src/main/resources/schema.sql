@@ -1,60 +1,68 @@
--- Таблица пользователей
-CREATE TABLE IF NOT EXISTS users (
-    user_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    login VARCHAR(255) NOT NULL UNIQUE,
-    birthday DATE
+DROP TABLE IF EXISTS likes CASCADE;
+DROP TABLE IF EXISTS friends CASCADE;
+DROP TABLE IF EXISTS films CASCADE;
+DROP TABLE IF EXISTS film_genre CASCADE;
+DROP TABLE IF EXISTS genres CASCADE;
+DROP TABLE IF EXISTS mpa CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS events CASCADE;
+
+SET SCHEMA PUBLIC;
+
+CREATE TABLE users (
+                       user_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                       user_name varchar(50),
+                       email varchar(50) NOT NULL,
+                       login varchar(50) NOT NULL,
+                       birthday date NOT NULL
 );
 
--- Таблица друзей
-CREATE TABLE IF NOT EXISTS friends (
-    user_id INT NOT NULL,
-    friend_id INT NOT NULL,
-    status BOOLEAN,
-    PRIMARY KEY (user_id, friend_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (friend_id) REFERENCES users(user_id) ON DELETE CASCADE
+CREATE TABLE mpa (
+                     mpa_id IDENTITY PRIMARY KEY,
+                     mpa_name varchar(15) NOT NULL,
+                     description varchar(100) NOT NULL
 );
 
--- Таблица рейтингов фильмов
-CREATE TABLE IF NOT EXISTS ratings (
-    rating_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description TEXT
+CREATE TABLE genres (
+                        genre_id IDENTITY PRIMARY KEY,
+                        genre_name varchar(100)
 );
 
--- Таблица фильмов
-CREATE TABLE IF NOT EXISTS films (
-    film_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description VARCHAR(255) NOT NULL UNIQUE,
-    release_date DATE NOT NULL,
-    duration INT,
-    rating_id INT,
-    FOREIGN KEY (rating_id) REFERENCES ratings(rating_id)
+CREATE TABLE films (
+                       film_id IDENTITY PRIMARY KEY,
+                       film_name varchar(100) NOT NULL,
+                       description varchar(200),
+                       release_date date,
+                       duration integer,
+                       mpa_id INTEGER REFERENCES mpa(mpa_id) ON DELETE CASCADE
 );
 
--- Таблица лайков фильмов
-CREATE TABLE IF NOT EXISTS likes (
-    user_id INT NOT NULL,
-    film_id INT NOT NULL,
-    PRIMARY KEY (user_id, film_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (film_id) REFERENCES films(film_id) ON DELETE CASCADE
+CREATE TABLE friends (
+                         sender_id BIGINT REFERENCES users(user_id) ON DELETE CASCADE,
+                         receiver_id BIGINT REFERENCES users(user_id) ON DELETE CASCADE,
+                         status VARCHAR(50) NOT NULL,
+                         PRIMARY KEY (sender_id, receiver_id)
 );
 
--- Таблица жанров фильмов
-CREATE TABLE IF NOT EXISTS genres (
-    genre_id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL
+CREATE TABLE film_genre (
+                            film_id INTEGER REFERENCES films(film_id) ON DELETE CASCADE,
+                            genre_id INTEGER REFERENCES genres(genre_id) ON DELETE CASCADE,
+                            PRIMARY KEY (film_id, genre_id)
 );
 
--- Таблица связи фильмов и жанров
-CREATE TABLE IF NOT EXISTS film_genres (
-    film_id INT NOT NULL,
-    genre_id INT NOT NULL,
-    PRIMARY KEY (film_id, genre_id),
-    FOREIGN KEY (film_id) REFERENCES films(film_id) ON DELETE CASCADE,
-    FOREIGN KEY (genre_id) REFERENCES genres(genre_id) ON DELETE CASCADE
+CREATE TABLE likes (
+                       user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+                       film_id INTEGER REFERENCES films(film_id) ON DELETE CASCADE,
+                       PRIMARY KEY (user_id, film_id)
 );
+
+CREATE TABLE IF NOT EXISTS events (
+                                      event_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                                      user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+                                      timestamp BIGINT NOT NULL,
+                                      event_type VARCHAR(50) NOT NULL,
+                                      operation VARCHAR(50) NOT NULL,
+                                      entity_id BIGINT NOT NULL
+);
+
+

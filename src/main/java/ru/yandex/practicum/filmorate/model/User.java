@@ -9,11 +9,13 @@ import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Data
 public class User {
-    private int id;
+    private Long id;
 
     @Email(message = "Электронная почта должна содержать символ '@'.")
     @NotBlank(message = "Электронная почта не может быть пустой.")
@@ -29,25 +31,14 @@ public class User {
     @PastOrPresent(message = "Дата рождения не может быть в будущем.")
     private LocalDate birthday;
 
-    private final Map<Integer, FriendshipStatus> friendsIDs = new HashMap<>();
+    private final Set<User> friends = new HashSet<>();
 
-    public void addFriend(int friendId) {
-        friendsIDs.put(friendId, FriendshipStatus.UNCONFIRMED);
+    public void addFriend(User friend) {
+        friends.add(friend);
     }
 
-    public void confirmFriendship(int friendId) {
-        if (friendsIDs.containsKey(friendId)) {
-            friendsIDs.put(friendId, FriendshipStatus.CONFIRMED);
-        }
-    }
-
-    public enum FriendshipStatus {
-        UNCONFIRMED,
-        CONFIRMED
-    }
-
-    public void removeFriend(int id) {
-        friendsIDs.remove(id);
+    public void deleteFriend(User friend) {
+        friends.remove(friend);
     }
 }
 

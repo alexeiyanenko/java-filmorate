@@ -1,61 +1,113 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
+import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
-@Controller
+@RestController
+@RequestMapping
+@Slf4j
 @Validated
 @RequiredArgsConstructor
-@RequestMapping("/films")
 public class FilmController {
 
     private final FilmService filmService;
 
-    @PostMapping
+    @PostMapping("/films")
     public ResponseEntity<Film> addFilm(@Valid @RequestBody Film film) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(filmService.addFilm(film));
+        log.debug("Запрос на добавление фильма: {}", film);
+        Film addefFilm = filmService.addFilm(film);
+        return new ResponseEntity<>(addefFilm, HttpStatus.CREATED);
     }
 
-    @PutMapping
-    public ResponseEntity<Film> updateUser(@RequestBody @Valid Film updatedFilm) {
-        return ResponseEntity.ok(filmService.updateFilm(updatedFilm));
+    @PutMapping("/films")
+    public Optional<Film> updateFilm(@Valid @RequestBody Film film) {
+        log.debug("Запрос на обновление фильма: {}", film);
+        return filmService.updateFilm(film);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Film>> getAllUsers() {
-        return ResponseEntity.ok(filmService.getAllFilms());
+    @DeleteMapping("/films/{filmId}")
+    public void deleteFilmById(@PathVariable long filmId) {
+        log.debug("Запрос на удаление фильма с id: {}", filmId);
+        filmService.deleteFilmById(filmId);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Film> getById(@PathVariable int id) {
-        return ResponseEntity.ok(filmService.getById(id));
+    @GetMapping("/films")
+    public List<Film> getAllFilms() {
+        log.debug("Запрос на получение всех фильмов");
+        return filmService.getAllFilms();
     }
 
-    @PutMapping("/{id}/like/{userId}")
-    public ResponseEntity<Void> like(@PathVariable int id, @PathVariable int userId) {
+    @GetMapping("/films/{filmId}")
+    public Film getFilmById(@PathVariable long filmId) {
+        log.debug("Запрос на получение фильма по id: {}", filmId);
+        return filmService.getFilmById(filmId);
+    }
+
+    @PutMapping("/films/{id}/like/{userId}")
+    public void like(@PathVariable long id, @PathVariable long userId) {
+        log.debug("Запрос на добавление лайка фильму id={} от пользователя id={}", id, userId);
         filmService.like(id, userId);
-        return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{id}/like/{userId}")
-    public ResponseEntity<Void> unlike(@PathVariable int id, @PathVariable int userId) {
+    @DeleteMapping("/films/{id}/like/{userId}")
+    public void unlike(@PathVariable long id, @PathVariable long userId) {
+        log.debug("Запрос на удаление лайка у фильма id={} от пользователя id={}", id, userId);
         filmService.unlike(id, userId);
-        return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/popular")
-    public ResponseEntity<List<Film>> getPopularFilms(@RequestParam(defaultValue = "10") @Positive(message = "Кол-во фильмов должно быть положительным.") int count) {
-        return ResponseEntity.ok(filmService.getPopularFilms(count));
+    @GetMapping("/films/popular")
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count,
+                                       @RequestParam(required = false) Long genreId,
+                                       @RequestParam(required = false) Integer year) {
+        log.debug("Запрос на популярные фильмы. Количество={}, жанр={}, год={}", count, genreId, year);
+        return filmService.getPopularFilms(count, genreId, year);
+    }
+
+    @GetMapping("/genres")
+    public List<Genre> getAllGenres() {
+        log.debug("Запрос на получение всех жанров");
+        return filmService.getAllGenres();
+    }
+
+    @GetMapping("/genres/{id}")
+    public Genre getGenreById(@PathVariable long id) {
+        log.debug("Запрос на получение жанра по id: {}", id);
+        return filmService.getGenreById(id);
+    }
+
+    @GetMapping("/mpa")
+    public List<MPA> getAllMPAs() {
+        log.debug("Запрос на получение всех рейтингов МПА");
+        return filmService.getAllMPAs();
+    }
+
+    @GetMapping("/mpa/{id}")
+    public MPA getMPAById(@PathVariable long id) {
+        log.debug("Запрос на получение рейтинга МПА по id: {}", id);
+        return filmService.getMPAById(id);
+    }
+
+    @GetMapping("/films/search")
+    public List<Film> findFilmsBySubstring(@RequestParam String query, @RequestParam String by) {
+        log.debug("Запрос на поиск фильмов с подстрокой '{}' в '{}'", query, by);
+        return filmService.findFilmsBySubstring(query, by);
+    }
+
+    @GetMapping("/films/common")
+    public List<Film> findCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
+        log.debug("Запрос на общие фильмы для пользователей id={} и id={}", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
     }
 }
