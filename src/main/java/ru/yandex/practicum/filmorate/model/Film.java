@@ -23,7 +23,7 @@ public class Film {
     private Set<Genre> genres = new LinkedHashSet<>();
 
     @JsonProperty("mpa")
-    private MPA MPARating;
+    private MPA mpa;
 
     @NotNull(message = "Описание не может быть пустым.")
     @Size(max = 200, message = "Максимальная длина описания — 200 символов.")

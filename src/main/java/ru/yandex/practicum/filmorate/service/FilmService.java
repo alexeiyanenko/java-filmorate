@@ -31,9 +31,9 @@ public class FilmService {
 
     public Film addFilm(Film film) {
         try {
-            MPA mpa = filmStorage.getMPAById(film.getMPARating().getId())
-                    .orElseThrow(() -> new ValidationException("Некорректный MPA ID: " + film.getMPARating().getId()));
-            film.setMPARating(mpa);
+            MPA mpa = filmStorage.getMPAById(film.getMpa().getId())
+                    .orElseThrow(() -> new ValidationException("Некорректный MPA ID: " + film.getMpa().getId()));
+            film.setMpa(mpa);
 
             // Добавление фильма в хранилище
             return filmStorage.addFilm(film)

@@ -67,7 +67,7 @@ class FilmDbStorageTests {
         film1.setReleaseDate(LocalDate.of(2014, 11, 7));
         film1.setDuration(169L);
         film1.setGenres(Set.of(genre1, genre2));
-        film1.setMPARating(mpa4);
+        film1.setMpa(mpa4);
 
         film2 = new Film();
         film2.setId(2L);
@@ -76,7 +76,7 @@ class FilmDbStorageTests {
         film2.setReleaseDate(LocalDate.of(2023, 5, 5));
         film2.setDuration(120L);
         film2.setGenres(Set.of(genre2));
-        film2.setMPARating(mpa3);
+        film2.setMpa(mpa3);
 
         filmStorage.addFilm(film1);
         filmStorage.addFilm(film2);
@@ -140,7 +140,7 @@ class FilmDbStorageTests {
 
     @Test
     public void testGetMPAById() {
-        MPA mpa = filmStorage.getMPAById(film1.getMPARating().getId()).orElseThrow();
+        MPA mpa = filmStorage.getMPAById(film1.getMpa().getId()).orElseThrow();
         assertThat(mpa).hasFieldOrPropertyWithValue("name", "R");
 
         assertThat(filmStorage.getMPAById(999L)).isEmpty();

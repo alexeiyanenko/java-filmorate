@@ -53,7 +53,7 @@ class EventDbStorageTests {
         film1.setReleaseDate(LocalDate.of(2014, 11, 7));
         film1.setDuration(169L);
         film1.setGenres(Set.of(genre1, genre2));
-        film1.setMPARating(mpa4);
+        film1.setMpa(mpa4);
 
         filmStorage.addFilm(film1);
     }

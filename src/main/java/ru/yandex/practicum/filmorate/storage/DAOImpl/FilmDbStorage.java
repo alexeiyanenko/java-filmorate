@@ -41,14 +41,14 @@ public class FilmDbStorage implements FilmStorage {
             stmt.setString(2, film.getDescription());
             stmt.setDate(3, Date.valueOf(film.getReleaseDate()));
             stmt.setLong(4, film.getDuration());
-            stmt.setObject(5, film.getMPARating() != null ? film.getMPARating().getId() : null);
+            stmt.setObject(5, film.getMpa() != null ? film.getMpa().getId() : null);
             return stmt;
         }, keyHolder);
 
         film.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
-        film.setMPARating(
-                film.getMPARating() != null
-                        ? getMPAById(film.getMPARating().getId()).orElseThrow()
+        film.setMpa(
+                film.getMpa() != null
+                        ? getMPAById(film.getMpa().getId()).orElseThrow()
                         : null
         );
 
@@ -64,14 +64,14 @@ public class FilmDbStorage implements FilmStorage {
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                film.getMPARating().getId(),
+                film.getMpa().getId(),
                 film.getId());
 
         if (rowsUpdated == 0) {
             throw new NoSuchElementException("Фильм " + film.getId() + " не найден.");
         }
 
-        film.setMPARating(getMPAById(film.getMPARating().getId()).orElseThrow());
+        film.setMpa(getMPAById(film.getMpa().getId()).orElseThrow());
         deleteGenresByFilmId(film.getId());
         return Optional.of(updateGenres(film));
     }
@@ -227,7 +227,7 @@ public class FilmDbStorage implements FilmStorage {
         film.setDuration(rs.getLong("duration"));
 
         // Проверяем наличие MPA рейтинга
-        film.setMPARating(getMPAById(rs.getLong("mpa_id"))
+        film.setMpa(getMPAById(rs.getLong("mpa_id"))
                 .orElse(new MPA(0L, "Unknown", "No description available")));
 
         // Получение жанров
