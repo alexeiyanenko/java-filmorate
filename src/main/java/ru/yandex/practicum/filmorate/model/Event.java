@@ -14,9 +14,18 @@ public class Event {
     private Long userId;
     @NonNull
     private Long timestamp;
-    private String eventType; // LIKE или FRIENDSHIP
-    private String operation; // ADD или REMOVE
+    private EventType eventType;
+    private Operation operation;
     @NonNull
     private Long entityId;
 
+    public enum EventType {
+        LIKE,
+        FRIENDSHIP
+    }
+
+    public enum Operation {
+        ADD,
+        DELETE
+    }
 }

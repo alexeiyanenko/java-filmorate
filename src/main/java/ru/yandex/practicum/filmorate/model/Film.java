@@ -38,16 +38,6 @@ public class Film {
 
     private final Set<Long> likes = new HashSet<>();
 
-    public void setGenres(Set<Genre> genres) {
-        this.genres.clear();
-        this.genres.addAll(genres);
-    }
-
-    public void setLikes(Set<Long> likes) {
-        this.likes.clear();
-        this.likes.addAll(likes);
-    }
-
     public int getLikesCount() {
         return likes.size();
     }

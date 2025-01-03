@@ -73,57 +73,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film updateGenres(Film film) {
-        return null;
-    }
-
-    @Override
     public List<Film> findFilmsBySubstring(String query, String by) {
         return List.of();
     }
 
     @Override
     public List<Film> getCommonFilms(Long userId, Long friendId) {
-        return List.of();
-    }
-
-    @Override
-    public Optional<Genre> getGenreById(Long genreId) {
-        return Optional.empty();
-    }
-
-    @Override
-    public List<Genre> getAllGenres() {
-        return List.of();
-    }
-
-    @Override
-    public void deleteGenresByFilmId(Long filmId) {
-
-    }
-
-    @Override
-    public boolean isGenreExist(Long genreId) {
-        return false;
-    }
-
-    @Override
-    public Set<Genre> getGenresByFilmId(Long filmId) {
-        return Set.of();
-    }
-
-    @Override
-    public Map<Long, Set<Genre>> getGenresForAllFilms() {
-        return Map.of();
-    }
-
-    @Override
-    public Optional<MPA> getMPAById(Long mpaId) {
-        return Optional.empty();
-    }
-
-    @Override
-    public List<MPA> getAllMPAs() {
         return List.of();
     }
 }

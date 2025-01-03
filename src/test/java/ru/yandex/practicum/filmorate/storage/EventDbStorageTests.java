@@ -7,10 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MPA;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.DAOImpl.EventDbStorage;
 import ru.yandex.practicum.filmorate.storage.DAOImpl.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.DAOImpl.UserDbStorage;
@@ -60,7 +57,7 @@ class EventDbStorageTests {
 
     @Test
     public void testCreateEvent() {
-        eventStorage.createEvent(user1.getId(), "LIKE", "ADD", 1L);
+        eventStorage.createEvent(user1.getId(), Event.EventType.LIKE, Event.Operation.ADD, 1L);
 
         assertThat(true).isTrue();
     }
