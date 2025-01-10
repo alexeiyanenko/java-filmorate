@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,14 +10,20 @@ import ru.yandex.practicum.filmorate.validation.ValidReleaseDate;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Data
 public class Film {
-    private int id;
+    private Long id;
 
     @NotBlank(message = "Название фильма не может быть пустым.")
     private String name;
+
+    private Set<Genre> genres = new LinkedHashSet<>();
+
+    @JsonProperty("mpa")
+    private MPA mpa;
 
     @NotNull(message = "Описание не может быть пустым.")
     @Size(max = 200, message = "Максимальная длина описания — 200 символов.")
@@ -27,17 +34,9 @@ public class Film {
     private LocalDate releaseDate;
 
     @Positive(message = "Продолжительность фильма должна быть положительным числом.")
-    private int duration;
+    private Long duration;
 
-    private final Set<Integer> likes = new HashSet<>();
-
-    public void addLike(int userId) {
-        likes.add(userId);
-    }
-
-    public void removeLike(int userId) {
-        likes.remove(userId);
-    }
+    private final Set<Long> likes = new HashSet<>();
 
     public int getLikesCount() {
         return likes.size();

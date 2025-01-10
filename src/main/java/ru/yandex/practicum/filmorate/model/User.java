@@ -13,7 +13,7 @@ import java.util.Set;
 
 @Data
 public class User {
-    private int id;
+    private Long id;
 
     @Email(message = "Электронная почта должна содержать символ '@'.")
     @NotBlank(message = "Электронная почта не может быть пустой.")
@@ -29,14 +29,14 @@ public class User {
     @PastOrPresent(message = "Дата рождения не может быть в будущем.")
     private LocalDate birthday;
 
-    private final Set<Integer> friendsIDs = new HashSet<>();
+    private final Set<User> friends = new HashSet<>();
 
-    public void addFriend(int id) {
-        friendsIDs.add(id);
+    public void addFriend(User friend) {
+        friends.add(friend);
     }
 
-    public void removeFriend(int id) {
-        friendsIDs.remove(id);
+    public void deleteFriend(User friend) {
+        friends.remove(friend);
     }
 }
 

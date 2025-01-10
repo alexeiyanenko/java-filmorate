@@ -1,70 +1,76 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 
-@Controller
-@RequiredArgsConstructor
+import jakarta.validation.Valid;
+import java.util.List;
+
+@RestController
 @RequestMapping("/users")
+@Slf4j
+@Validated
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<User> createUser(@Valid @RequestBody User user) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(user));
+    public User createUser(@Valid @RequestBody User user) {
+        log.debug("Создание пользователя: {}", user);
+        return userService.createUser(user);
     }
 
     @PutMapping
-    public ResponseEntity<User> updateUser(@RequestBody @Valid User updatedUser) {
-        return ResponseEntity.ok(userService.updateUser(updatedUser));
+    public User updateUser(@Valid @RequestBody User user) {
+        log.debug("Обновление пользователя: {}", user);
+        return userService.updateUser(user);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable long id) {
+        userService.deleteUser(id);
+        log.debug("Удалён пользователь с id: {}", id);
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public List<User> getAllUsers() {
+        log.debug("Запрос на получение всех пользователей");
+        return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getById(@PathVariable int id) {
-        return ResponseEntity.ok(userService.getById(id));
+    public User getUserById(@PathVariable long id) {
+        log.debug("Запрос пользователя с id: {}", id);
+        return userService.getUserById(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> friend(@PathVariable int id, @PathVariable int friendId) {
+    public void friend(@PathVariable long id, @PathVariable long friendId) {
         userService.friend(id, friendId);
-        return ResponseEntity.noContent().build();
+        log.debug("Добавление в друзья: {} -> {}", id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> unfriend(@PathVariable int id, @PathVariable int friendId) {
+    public void unfriend(@PathVariable long id, @PathVariable long friendId) {
         userService.unfriend(id, friendId);
-        return ResponseEntity.noContent().build();
+        log.debug("Удаление из друзей: {} -> {}", id, friendId);
     }
 
     @GetMapping("/{id}/friends")
-    public ResponseEntity<List<Map<String, Integer>>> getFriendsIDs(@PathVariable int id) {
-        Set<Integer> friendsIDs = userService.getFriendsIDs(id);
-
-        List<Map<String, Integer>> friends = friendsIDs.stream()
-                .map(friendId -> Map.of("id", friendId))
-                .toList();
-        return ResponseEntity.ok(friends);
+    public List<User> getFriends(@PathVariable long id) {
+        log.debug("Получение друзей пользователя с id: {}", id);
+        return userService.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public ResponseEntity<List<User>> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
-        return ResponseEntity.ok(userService.getCommonFriends(id, otherId));
+    public List<User> getCommonFriends(@PathVariable long id, @PathVariable long otherId) {
+        log.debug("Получение общих друзей между {} и {}", id, otherId);
+        return userService.getCommonFriends(id, otherId);
     }
 }
