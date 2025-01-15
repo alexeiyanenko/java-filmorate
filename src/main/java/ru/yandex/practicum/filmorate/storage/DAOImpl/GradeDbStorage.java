@@ -28,13 +28,13 @@ public class GradeDbStorage implements GradeStorage {
     @Override
     public void addLikeToReview(Long id, Long userId) {
 
-        //Проверяем, есть ли уже такая запись в БД с оценкой LIKE
+        // Проверяем, есть ли уже такая запись в БД с оценкой LIKE
         if (isGradeExists(id, userId, "LIKE")) {
             log.info("Лайк от пользователя {} к отзыву {} уже добавлен", userId, id);
             return;
         }
 
-        //Проверяем, есть ли уже такая запись в БД с оценкой DISLIKE
+        // Проверяем, есть ли уже такая запись в БД с оценкой DISLIKE
         if (isGradeExists(id, userId, "DISLIKE")) {
             log.info("Есть дизлайк от пользователя {} к отзыву {}", userId, id);
             deleteDislikeFromReview(id, userId);
