@@ -21,7 +21,7 @@ import java.util.NoSuchElementException;
 @Repository
 @Slf4j
 @RequiredArgsConstructor
-public class gradeDbStorage implements GradeStorage {
+public class GradeDbStorage implements GradeStorage {
 
     private final JdbcTemplate jdbcTemplate;
 

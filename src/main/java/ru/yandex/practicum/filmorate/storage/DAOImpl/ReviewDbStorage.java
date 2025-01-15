@@ -24,7 +24,7 @@ import java.util.Optional;
 @Repository
 @Slf4j
 @RequiredArgsConstructor
-public class reviewDbStorage implements ReviewStorage {
+public class ReviewDbStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private final UserDbStorage userDbStorage;
