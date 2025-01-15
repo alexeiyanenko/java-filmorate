@@ -137,7 +137,7 @@ public class reviewDbStorage implements ReviewStorage {
 
     public List<Review> getAllReviews(Long filmId) {
 
-        // Если указан фильм и не указано количество отзывов
+        //Если указан фильм и не указано количество отзывов
 
         Long count = 10L;
         String sqlQuery = "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
@@ -149,7 +149,7 @@ public class reviewDbStorage implements ReviewStorage {
 
     public List<Review> getAllReviews() {
 
-        // Если не указано ничего, то выводим все отзывы c лимитом 10
+        //Если не указано ничего, то выводим все отзывы c лимитом 10
 
         Long count = 10L;
         String sqlQuery = "SELECT * FROM reviews ORDER BY useful DESC LIMIT ?";
