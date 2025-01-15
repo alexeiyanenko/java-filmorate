@@ -148,9 +148,8 @@ public class GradeDbStorage implements GradeStorage {
     public boolean isGradeExists(Long id, Long userId, String grade) {
         List<Grade> grades = getAllGrades();
 
-        return grades.stream().
-                anyMatch(g -> g.getUserId().equals(userId) && g.getGrade().equals(grade) &&
-                        g.getReviewId().equals(id));
+        return grades.stream()
+            .anyMatch(g -> g.getUserId().equals(userId) && g.getGrade().equals(grade) && g.getReviewId().equals(id));
     }
 
     public List<Grade> getAllGrades() {
