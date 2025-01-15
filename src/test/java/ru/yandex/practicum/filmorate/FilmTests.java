@@ -39,8 +39,11 @@ class FilmTests {
 
     private User user1;
     private User user2;
+    private User user3;
+    private User user4;
     private Film film1;
     private Film film2;
+    private Film film3;
 
     @BeforeEach
     public void beforeEach() {
@@ -56,8 +59,23 @@ class FilmTests {
         user2.setName("Тимофей");
         user2.setBirthday(LocalDate.of(1990, 7, 15));
 
+        user3 = new User();
+        user3.setEmail("pavel@example.com");
+        user3.setLogin("pavel");
+        user3.setName("Павел");
+        user3.setBirthday(LocalDate.of(1985, 3, 10));
+
+        user4 = new User();
+        user4.setEmail("anna@example.com");
+        user4.setLogin("anna");
+        user4.setName("Анна");
+        user4.setBirthday(LocalDate.of(1992, 8, 25));
+
+
         userStorage.createUser(user1);
         userStorage.createUser(user2);
+        userStorage.createUser(user3);
+        userStorage.createUser(user4);
 
         MPA mpa4 = new MPA(4L, "R", "лицам до 17 лет просматривать фильм можно только в присутствии взрослого");
         MPA mpa3 = new MPA(3L, "PG-13", "детям до 13 лет просмотр не желателен");
@@ -82,8 +100,18 @@ class FilmTests {
         film2.setGenres(Set.of(genre2));
         film2.setMpa(mpa3);
 
+        film3 = new Film();
+        film3.setId(4L);
+        film3.setName("Brave New World");
+        film3.setDescription("A dystopian society where everyone is conditioned for their role, and individuality is suppressed.");
+        film3.setReleaseDate(LocalDate.of(2020, 7, 15));
+        film3.setDuration(480L);
+        film3.setGenres(Set.of(genre2));
+        film3.setMpa(mpa3);
+
         filmService.addFilm(film1);
         filmService.addFilm(film2);
+        filmService.addFilm(film3);
     }
 
     @Test
@@ -144,7 +172,7 @@ class FilmTests {
     @Test
     public void testGetAllFilms() {
         List<Film> films = filmStorage.getAllFilms();
-        assertThat(films).hasSize(2);
+        assertThat(films).hasSize(3);
     }
 
     @Test
@@ -178,12 +206,29 @@ class FilmTests {
 
     @Test
     public void testGetCommonFilms() {
+        // Лайки пользователей
+        likeStorage.like(film3.getId(), user1.getId());
+        likeStorage.like(film3.getId(), user2.getId());
+
+        likeStorage.like(film2.getId(), user1.getId());
+        likeStorage.like(film2.getId(), user2.getId());
+        likeStorage.like(film2.getId(), user3.getId());
+
         likeStorage.like(film1.getId(), user1.getId());
         likeStorage.like(film1.getId(), user2.getId());
-        likeStorage.like(film2.getId(), user1.getId());
+        likeStorage.like(film1.getId(), user3.getId());
+        likeStorage.like(film1.getId(), user4.getId());
 
+        // Получение общих фильмов
         List<Film> commonFilms = filmStorage.getCommonFilms(user1.getId(), user2.getId());
-        assertThat(commonFilms).hasSize(1).first().hasFieldOrPropertyWithValue("name", "Interstellar");
+
+        // Проверка размеров списка
+        assertThat(commonFilms).hasSize(3);
+
+        // Проверка порядка сортировки по популярности
+        assertThat(commonFilms.get(0).getName()).isEqualTo("Interstellar");
+        assertThat(commonFilms.get(1).getName()).isEqualTo("Silo");
+        assertThat(commonFilms.get(2).getName()).isEqualTo("Brave New World");
     }
 
     @Test
