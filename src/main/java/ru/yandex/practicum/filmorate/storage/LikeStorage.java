@@ -13,4 +13,6 @@ public interface LikeStorage {
     List<Long> getLikesByFilmId(Long filmId);
 
     Map<Long, Set<Long>> getAllLikes();
+
+    List<Long> getLikesByUserId(Long userId);
 }

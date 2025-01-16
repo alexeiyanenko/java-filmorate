@@ -48,4 +48,9 @@ public class LikeDbStorage implements LikeStorage {
             return allLikes;
         });
     }
+
+    public List<Long> getLikesByUserId(Long userId) {
+        String sqlQuery = "select film_id from likes where user_id = ?";
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> rs.getLong("film_id"), userId);
+    }
 }
