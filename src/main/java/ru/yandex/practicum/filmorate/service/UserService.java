@@ -7,11 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.*;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +25,10 @@ public class UserService {
     private final FriendshipStorage friendshipStorage;
     @Qualifier("eventDbStorage")
     private final EventStorage eventStorage;
+    @Qualifier("likeDbStorage")
+    private final LikeStorage likeStorage;
+    @Qualifier("filmDbStorage")
+    private final FilmStorage filmStorage;
 
     public User createUser(User user) {
         setDefaultNameIfEmpty(user);
@@ -120,5 +124,46 @@ public class UserService {
         return commonFriendIds.stream()
                 .map(this::getUserById)
                 .collect(Collectors.toList());
+    }
+
+    public List<Film> getRecommendations(long id) {
+        List<Long> userLikes = likeStorage.getLikesByUserId(id);
+        List<User> users = userStorage.getAllUsers();
+
+        // Находим лайки всех пользователей
+        Map<Long, List<Long>> usersLikesMap = new HashMap<>();
+        for (User user : users) {
+            if (!user.getId().equals(id)) {
+                List<Long> otherUserLikes = likeStorage.getLikesByUserId(user.getId());
+                usersLikesMap.put(user.getId(), otherUserLikes);
+            }
+        }
+
+        // Находим пользователя с максимальным пересечением лайков
+        Long similarUserId = usersLikesMap.entrySet().stream()
+                .max(Comparator.comparingInt(entry -> getIntersectionCount(userLikes, entry.getValue())))
+                .map(Map.Entry::getKey)
+                .orElse(null);
+
+        // Рекомендуем фильмы если похожий пользователь найден
+        if (similarUserId != null) {
+            List<Long> similarUserLikes = likeStorage.getLikesByUserId(similarUserId);
+            return similarUserLikes.stream()
+                    .filter(filmId -> !userLikes.contains(filmId))
+                    .map(filmStorage::getFilmById)
+                    .flatMap(Optional::stream)
+                    .toList();
+        }
+
+        // Если похожих пользователей нет, возвращаем пустой список
+        return Collections.emptyList();
+
+    }
+
+    // Метод для нахождения пересечений
+    private int getIntersectionCount(List<Long> list1, List<Long> list2) {
+        Set<Long> set1 = new HashSet<>(list1);
+        set1.retainAll(list2);
+        return set1.size();
     }
 }
