@@ -177,9 +177,15 @@ public class FilmService {
         if (!userStorage.isUserExist(friendId)) {
             throw new NotFoundException("Друг с ID " + friendId + " не найден.");
         }
-        return filmStorage.getCommonFilms(userId, friendId);
-    }
 
+        List<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
+
+        Map<Long, Set<Genre>> genresMap = genreStorage.getGenresForAllFilms();
+
+        commonFilms.forEach(film -> film.setGenres(genresMap.getOrDefault(film.getId(), new HashSet<>())));
+
+        return commonFilms;
+    }
 
     public void like(long filmId, long userId) {
         Film film = filmStorage.getFilmById(filmId)
