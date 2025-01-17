@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -10,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 
 import jakarta.validation.Valid;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
+
 import java.util.List;
 
 @RestController
@@ -20,6 +23,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final EventStorage eventStorage;
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
@@ -49,6 +53,12 @@ public class UserController {
     public User getUserById(@PathVariable long id) {
         log.debug("Запрос пользователя с id: {}", id);
         return userService.getUserById(id);
+    }
+
+    @GetMapping("{id}/feed")
+    public List<Event> getAllEvents(@PathVariable long id) {
+        log.debug("Запрос ленты событий от пользователя с id: {}", id);
+        return eventStorage.getAllEvents(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")

@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -13,13 +12,7 @@ import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.storage.*;
 import ru.yandex.practicum.filmorate.validation.ValidationException;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Comparator;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -211,7 +204,7 @@ public class FilmService {
             throw new IllegalStateException("Пользователь с ID " + userId + " не лайкал фильм с ID " + filmId);
         }
         likeStorage.unlike(filmId, userId);
-        eventStorage.createEvent(userId, Event.EventType.LIKE, Event.Operation.DELETE, filmId);
+        eventStorage.createEvent(userId, Event.EventType.LIKE, Event.Operation.REMOVE, filmId);
         log.info("Пользователь с ID {} убрал лайк у фильма с ID {}", userId, filmId);
     }
 

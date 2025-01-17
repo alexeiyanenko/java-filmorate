@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Grade;
 import ru.yandex.practicum.filmorate.storage.GradeStorage;
 
@@ -24,6 +25,7 @@ import java.util.NoSuchElementException;
 public class GradeDbStorage implements GradeStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final EventDbStorage eventDbStorage;
 
     @Override
     public void addLikeToReview(Long id, Long userId) {
@@ -54,6 +56,8 @@ public class GradeDbStorage implements GradeStorage {
                 stmt.setString(3, "LIKE");
                 return stmt;
             }, keyHolder);
+
+            eventDbStorage.createEvent(userId, Event.EventType.LIKE, Event.Operation.ADD, id);
 
             log.info("Добавили лайк в отзыв от пользователя: {} -> {}", id, userId);
 
@@ -96,6 +100,8 @@ public class GradeDbStorage implements GradeStorage {
                 return stmt;
             }, keyHolder);
 
+            eventDbStorage.createEvent(userId, Event.EventType.DISLIKE, Event.Operation.ADD, id);
+
             log.info("Добавили дизлайк в отзыв от пользователя: {} -> {}", id, userId);
 
         } catch (Exception e) {
@@ -117,6 +123,8 @@ public class GradeDbStorage implements GradeStorage {
             throw new NoSuchElementException("Ошибка при удалении лайка");
         }
 
+        eventDbStorage.createEvent(userId, Event.EventType.LIKE, Event.Operation.REMOVE, id);
+
         log.info("Удалили лайк из отзыва от пользователя: {} -> {}", id, userId);
     }
 
@@ -131,6 +139,8 @@ public class GradeDbStorage implements GradeStorage {
         if (rowsDeleted == 0) {
             throw new NoSuchElementException("Ошибка при удалении дизлайка");
         }
+
+        eventDbStorage.createEvent(userId, Event.EventType.DISLIKE, Event.Operation.REMOVE, id);
 
         log.info("Удалили дизлайк из отзыва от пользователя: {} -> {}", id, userId);
     }
@@ -149,7 +159,7 @@ public class GradeDbStorage implements GradeStorage {
         List<Grade> grades = getAllGrades();
 
         return grades.stream()
-            .anyMatch(g -> g.getUserId().equals(userId) && g.getGrade().equals(grade) && g.getReviewId().equals(id));
+                .anyMatch(g -> g.getUserId().equals(userId) && g.getGrade().equals(grade) && g.getReviewId().equals(id));
     }
 
     public List<Grade> getAllGrades() {

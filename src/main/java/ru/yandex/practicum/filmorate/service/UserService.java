@@ -1,10 +1,9 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import lombok.extern.slf4j.Slf4j;
-
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -87,7 +86,7 @@ public class UserService {
             if (!isAdded) {
                 log.info("Дружба уже существует между {} и {}.", userId, friendId);
             } else {
-                eventStorage.createEvent(userId, Event.EventType.FRIENDSHIP, Event.Operation.ADD, friendId);
+                eventStorage.createEvent(userId, Event.EventType.FRIEND, Event.Operation.ADD, friendId);
                 log.info("Добавлена дружба между {} и {}.", userId, friendId);
             }
         } catch (RuntimeException e) {
@@ -103,7 +102,7 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с ID " + friendId + " не найден."));
 
         friendshipStorage.deleteFriendship(user, friend);
-        eventStorage.createEvent(userId, Event.EventType.FRIENDSHIP, Event.Operation.DELETE, friendId);
+        eventStorage.createEvent(userId, Event.EventType.FRIEND, Event.Operation.REMOVE, friendId);
     }
 
     public List<User> getCommonFriends(long id, long otherId) {
