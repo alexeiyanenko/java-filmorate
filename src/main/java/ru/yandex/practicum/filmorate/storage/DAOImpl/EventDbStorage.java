@@ -30,7 +30,7 @@ public class EventDbStorage implements EventStorage {
     }
 
     @Override
-    public List<Event> getAllEvents(long id) {
+    public List<Event> getAllEventsById(long id) {
         String sqlQuery = "SELECT * FROM events WHERE user_id = ?";
         return jdbcTemplate.query(sqlQuery, this::mapRowToEvent, id);
     }

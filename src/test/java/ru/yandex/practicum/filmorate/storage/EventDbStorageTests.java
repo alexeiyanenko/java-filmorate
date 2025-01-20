@@ -59,7 +59,7 @@ class EventDbStorageTests {
     public void testCreateEvent() {
         eventStorage.createEvent(user1.getId(), Event.EventType.LIKE, Event.Operation.ADD, 1L);
 
-        List<Event> createdEvents = eventStorage.getAllEvents(user1.getId());
+        List<Event> createdEvents = eventStorage.getAllEventsById(user1.getId());
 
         Assertions.assertThat(createdEvents).hasSize(1);
     }

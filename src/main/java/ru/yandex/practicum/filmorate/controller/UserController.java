@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final EventStorage eventStorage;
+    private final EventService eventService;
 
     @PostMapping
     public User createUser(@Valid @RequestBody User user) {
@@ -63,9 +64,9 @@ public class UserController {
     }
 
     @GetMapping("{id}/feed")
-    public List<Event> getAllEvents(@PathVariable long id) {
+    public List<Event> getAllEventsById(@PathVariable long id) {
         log.debug("Запрос ленты событий от пользователя с id: {}", id);
-        return eventStorage.getAllEvents(id);
+        return eventService.getAllEventsById(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")

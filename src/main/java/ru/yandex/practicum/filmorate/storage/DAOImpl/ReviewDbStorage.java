@@ -9,7 +9,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
@@ -28,24 +27,11 @@ import java.util.Optional;
 public class ReviewDbStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final UserDbStorage userDbStorage;
-    private final FilmDbStorage filmDbStorage;
-    private final EventDbStorage eventDbStorage;
 
     @Override
     public Review addReview(Review review) {
         String sqlQuery = "INSERT INTO reviews (content, isPositive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
-        //Проверяем, есть ли пользователь с таким id
-        if (userDbStorage.getUserById(review.getUserId()).isEmpty()) {
-            throw new NotFoundException("Пользователь не найден");
-        }
-
-        //Проверяем, есть ли фильм с таким id
-        if (filmDbStorage.getFilmById(review.getFilmId()).isEmpty()) {
-            throw new NotFoundException("Фильм не найден");
-        }
 
         try {
             jdbcTemplate.update(connection -> {
@@ -65,8 +51,6 @@ public class ReviewDbStorage implements ReviewStorage {
 
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
         review.setUseful(0L);
-
-        eventDbStorage.createEvent(review.getUserId(), Event.EventType.REVIEW, Event.Operation.ADD, review.getReviewId());
 
         log.info("Создали отзыв: {}", review);
 
@@ -95,8 +79,6 @@ public class ReviewDbStorage implements ReviewStorage {
             throw new NoSuchElementException("Отзыв не найден: " + review.getReviewId());
         }
 
-        eventDbStorage.createEvent(review.getUserId(), Event.EventType.REVIEW, Event.Operation.UPDATE, review.getReviewId());
-
         log.info("Обновили отзыв: {}", review);
 
         return review;
@@ -105,16 +87,12 @@ public class ReviewDbStorage implements ReviewStorage {
     @Override
     public void deleteReview(Long id) {
 
-        Review review = getReviewById(id);
-
         String sqlQuery = "DELETE FROM reviews WHERE review_id = ?";
         int rowsDeleted = jdbcTemplate.update(sqlQuery, id);
 
         if (rowsDeleted == 0) {
             throw new NoSuchElementException("Отзыв с ID " + id + " не найден.");
         }
-
-        eventDbStorage.createEvent(review.getUserId(), Event.EventType.REVIEW, Event.Operation.REMOVE, id);
 
         log.info("Удалили отзыв: {}", id);
     }
