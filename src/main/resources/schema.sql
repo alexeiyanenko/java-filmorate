@@ -3,6 +3,8 @@ DROP TABLE IF EXISTS friends CASCADE;
 DROP TABLE IF EXISTS films CASCADE;
 DROP TABLE IF EXISTS film_genre CASCADE;
 DROP TABLE IF EXISTS genres CASCADE;
+DROP TABLE IF EXISTS film_director CASCADE;
+DROP TABLE IF EXISTS directors CASCADE;
 DROP TABLE IF EXISTS mpa CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS events CASCADE;
@@ -30,6 +32,11 @@ CREATE TABLE IF NOT EXISTS genres (
                         genre_name varchar(100)
 );
 
+CREATE TABLE IF NOT EXISTS directors (
+                           director_id IDENTITY PRIMARY KEY,
+                           director_name varchar(50) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS films (
                        film_id IDENTITY PRIMARY KEY,
                        film_name varchar(100) NOT NULL,
@@ -50,6 +57,12 @@ CREATE TABLE IF NOT EXISTS film_genre (
                             film_id INTEGER REFERENCES films(film_id) ON DELETE CASCADE,
                             genre_id INTEGER REFERENCES genres(genre_id) ON DELETE CASCADE,
                             PRIMARY KEY (film_id, genre_id)
+);
+
+CREATE TABLE IF NOT EXISTS film_director (
+                            film_id INTEGER REFERENCES films(film_id) ON DELETE CASCADE,
+                            director_id INTEGER REFERENCES directors(director_id) ON DELETE CASCADE,
+                            PRIMARY KEY (film_id, director_id)
 );
 
 CREATE TABLE IF NOT EXISTS likes (
