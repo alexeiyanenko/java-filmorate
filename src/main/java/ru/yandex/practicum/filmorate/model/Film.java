@@ -38,6 +38,8 @@ public class Film {
 
     private final Set<Long> likes = new HashSet<>();
 
+    private  Set<Director> directors = new LinkedHashSet<>();
+
     public int getLikesCount() {
         return likes.size();
     }

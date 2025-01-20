@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -118,6 +119,37 @@ public class FilmDbStorage implements FilmStorage {
     public boolean isFilmExist(Long filmId) {
         String sqlQuery = "SELECT EXISTS (SELECT 1 FROM films WHERE film_id = ?)";
         return jdbcTemplate.queryForObject(sqlQuery, Boolean.class, filmId);
+    }
+
+    @Override
+    public List<Film> getDirectorFilms(Long directorId, String sortBy) {
+        String sqlQuery;
+        switch (sortBy) {
+            case "year":
+                sqlQuery = "SELECT * " +
+                        "FROM film_director AS fd " +
+                        "JOIN films AS f ON fd.film_id = f.film_id " +
+                        "WHERE fd.director_id = ? " +
+                        "ORDER BY f.release_date";
+                break;
+
+            case "likes":
+                sqlQuery = "SELECT f.film_id, f.film_name, f.description, f.release_date, f.duration, " +
+                        "f.mpa_id " +
+                        "FROM films AS f " +
+                        "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
+                        "LEFT JOIN film_director AS fd ON f.film_id = fd.film_id " +
+                        "WHERE fd.director_id = ? " +
+                        "GROUP BY f.film_id " +
+                        "ORDER BY COUNT(l.film_id) DESC";
+
+                break;
+
+            default:
+                log.error("Несуществующая сортировка {}", sortBy);
+                throw new NotFoundException("Несуществующая сортировка " + sortBy);
+        }
+        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, directorId);
     }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
