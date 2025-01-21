@@ -7,9 +7,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
-import ru.yandex.practicum.filmorate.model.*;
+
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.MPA;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Director;
+
+import ru.yandex.practicum.filmorate.storage.DAOImpl.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.DAOImpl.GenreDbStorage;
+import ru.yandex.practicum.filmorate.storage.DAOImpl.LikeDbStorage;
+import ru.yandex.practicum.filmorate.storage.DAOImpl.MpaDbStorage;
+import ru.yandex.practicum.filmorate.storage.DAOImpl.UserDbStorage;
+import ru.yandex.practicum.filmorate.storage.DAOImpl.EventDbStorage;
+import ru.yandex.practicum.filmorate.storage.DAOImpl.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.DAOImpl.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -18,8 +30,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @JdbcTest
 @AutoConfigureTestDatabase

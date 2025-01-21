@@ -5,9 +5,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.MPA;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Event;
+
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.LikeStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.storage.*;
 import ru.yandex.practicum.filmorate.validation.ValidationException;
 
 import java.util.List;

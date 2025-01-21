@@ -6,12 +6,25 @@ import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.*;
 
-import java.util.*;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.LikeStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
+import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Comparator;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 @Service
