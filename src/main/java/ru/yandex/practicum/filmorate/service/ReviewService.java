@@ -2,14 +2,15 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.DAOImpl.EventDbStorage;
-import ru.yandex.practicum.filmorate.storage.DAOImpl.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storage.DAOImpl.ReviewDbStorage;
-import ru.yandex.practicum.filmorate.storage.DAOImpl.UserDbStorage;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.ReviewStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 
@@ -17,35 +18,46 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class ReviewService {
-    private final ReviewDbStorage reviewDbStorage;
-    private final UserDbStorage userDbStorage;
-    private final FilmDbStorage filmDbStorage;
-    private final EventDbStorage eventDbStorage;
+    @Qualifier("reviewDbStorage")
+    private final ReviewStorage reviewStorage;
+    @Qualifier("userDbStorage")
+    private final UserStorage userStorage;
+    @Qualifier("filmDbStorage")
+    private final FilmStorage filmStorage;
+    @Qualifier("eventStorage")
+    private final EventStorage eventStorage;
 
     public Review addReview(Review review) {
 
         //Проверяем, есть ли пользователь с таким id
-        if (userDbStorage.getUserById(review.getUserId()).isEmpty()) {
+        if (userStorage.getUserById(review.getUserId()).isEmpty()) {
             throw new NotFoundException("Пользователь не найден");
         }
 
         //Проверяем, есть ли фильм с таким id
-        if (filmDbStorage.getFilmById(review.getFilmId()).isEmpty()) {
+        if (filmStorage.getFilmById(review.getFilmId()).isEmpty()) {
             throw new NotFoundException("Фильм не найден");
         }
 
-        Review addedReview = reviewDbStorage.addReview(review);
+        Review addedReview = reviewStorage.addReview(review);
 
-        eventDbStorage.createEvent(addedReview.getUserId(), Event.EventType.REVIEW, Event.Operation.ADD, addedReview.getReviewId());
+        eventStorage.createEvent(addedReview.getUserId(), Event.EventType.REVIEW, Event.Operation.ADD, addedReview.getReviewId());
 
         return addedReview;
     }
 
     public Review updateReview(Review review) {
 
-        Review updatedReview = reviewDbStorage.updateReview(review);
+        Review oldReview = reviewStorage.getReviewById(review.getReviewId());
 
-        eventDbStorage.createEvent(updatedReview.getUserId(), Event.EventType.REVIEW, Event.Operation.UPDATE, updatedReview.getReviewId());
+        Review updatedReview = reviewStorage.updateReview(review);
+
+        // id фильма и пользователя не меняются при обновлении
+        updatedReview.setUserId(oldReview.getUserId());
+        updatedReview.setFilmId(oldReview.getFilmId());
+        updatedReview.setUseful(0L);
+
+        eventStorage.createEvent(updatedReview.getUserId(), Event.EventType.REVIEW, Event.Operation.UPDATE, updatedReview.getReviewId());
 
         return updatedReview;
     }
@@ -53,25 +65,25 @@ public class ReviewService {
     public void deleteReview(Long id) {
         Review review = getReviewById(id);
 
-        reviewDbStorage.deleteReview(id);
+        reviewStorage.deleteReview(id);
 
-        eventDbStorage.createEvent(review.getUserId(), Event.EventType.REVIEW, Event.Operation.REMOVE, id);
+        eventStorage.createEvent(review.getUserId(), Event.EventType.REVIEW, Event.Operation.REMOVE, id);
 
     }
 
     public Review getReviewById(Long id) {
-        return reviewDbStorage.getReviewById(id);
+        return reviewStorage.getReviewById(id);
     }
 
     public List<Review> getAllReviews(Long filmId, Long count) {
-        return reviewDbStorage.getAllReviews(filmId, count);
+        return reviewStorage.getAllReviews(filmId, count);
     }
 
     public List<Review> getAllReviews(Long filmId) {
-        return reviewDbStorage.getAllReviews(filmId);
+        return reviewStorage.getAllReviews(filmId);
     }
 
     public List<Review> getAllReviews() {
-        return reviewDbStorage.getAllReviews();
+        return reviewStorage.getAllReviews();
     }
 }

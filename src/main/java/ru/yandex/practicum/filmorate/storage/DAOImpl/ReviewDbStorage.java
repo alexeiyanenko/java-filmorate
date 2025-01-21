@@ -65,14 +65,10 @@ public class ReviewDbStorage implements ReviewStorage {
             review.setUseful(0L);
         }
 
-        String sqlQuery = "UPDATE reviews SET content = ?, isPositive = ?, user_id = ?, film_id = ?, useful = ?" +
-                " WHERE review_id = ?";
+        String sqlQuery = "UPDATE reviews SET content = ?, isPositive = ? WHERE review_id = ?";
         int rowsUpdated = jdbcTemplate.update(sqlQuery,
                 review.getContent(),
                 review.getIsPositive(),
-                review.getUserId(),
-                review.getFilmId(),
-                review.getUseful(),
                 review.getReviewId());
 
         if (rowsUpdated == 0) {
