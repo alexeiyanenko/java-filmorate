@@ -122,7 +122,11 @@ public class FilmService {
     }
 
     public List<Film> getAllFilms() {
-        return filmStorage.getAllFilms();
+        List<Film> films = filmStorage.getAllFilms();
+
+        return films.stream()
+                .map(this::enrichFilm)
+                .collect(Collectors.toList());
     }
 
     public List<Film> getPopularFilms(int count, Long genreId, Integer year) {
