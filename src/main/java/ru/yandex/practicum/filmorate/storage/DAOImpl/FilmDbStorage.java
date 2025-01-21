@@ -17,7 +17,11 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.List;
+import java.util.ArrayList;
 
 @Primary
 @Repository
@@ -90,16 +94,38 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> findFilmsBySubstring(String query, String by) {
-        String sqlQuery;
-        if ("name".equalsIgnoreCase(by)) {
-            sqlQuery = "SELECT * FROM films WHERE LOWER(film_name) LIKE LOWER(?)";
-        } else if ("description".equalsIgnoreCase(by)) {
-            sqlQuery = "SELECT * FROM films WHERE LOWER(description) LIKE LOWER(?)";
-        } else {
-            throw new IllegalArgumentException("Параметр 'by' должен быть 'name' или 'description'");
+        StringBuilder sqlQuery = new StringBuilder("SELECT f.*, COUNT(l.film_id) AS likes_count ");
+        sqlQuery.append("FROM films f ");
+        sqlQuery.append("LEFT JOIN likes l ON f.film_id = l.film_id ");
+
+        if (by.contains("director")) {
+            sqlQuery.append("LEFT JOIN film_director fd ON f.film_id = fd.film_id ");
+            sqlQuery.append("LEFT JOIN directors d ON fd.director_id = d.director_id ");
         }
-        String searchQuery = "%" + query + "%";
-        return jdbcTemplate.query(sqlQuery, this::mapRowToFilm, searchQuery);
+
+        sqlQuery.append("WHERE ");
+
+        // Условия поиска
+        String searchQuery = "%" + query.toLowerCase() + "%";
+        List<Object> params = new ArrayList<>();
+        if (by.contains("title") && by.contains("director")) {
+            sqlQuery.append("(LOWER(film_name) LIKE ? OR LOWER(d.director_name) LIKE ?) ");
+            params.add(searchQuery);
+            params.add(searchQuery);
+        } else if (by.contains("title")) {
+            sqlQuery.append("LOWER(film_name) LIKE ? ");
+            params.add(searchQuery);
+        } else if (by.contains("director")) {
+            sqlQuery.append("LOWER(d.director_name) LIKE ? ");
+            params.add(searchQuery);
+        } else {
+            throw new IllegalArgumentException("Параметр 'by' должен содержать 'title', 'director' или оба значения.");
+        }
+
+        sqlQuery.append("GROUP BY f.film_id ");
+        sqlQuery.append("ORDER BY likes_count DESC");
+
+        return jdbcTemplate.query(sqlQuery.toString(), this::mapRowToFilm, params.toArray());
     }
 
     @Override
