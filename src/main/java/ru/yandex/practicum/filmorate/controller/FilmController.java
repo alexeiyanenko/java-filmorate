@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import jakarta.validation.Valid;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -67,8 +68,8 @@ public class FilmController {
 
     @GetMapping("/popular")
     public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count,
-                                       @RequestParam(required = false) Long genreId,
-                                       @RequestParam(required = false) Integer year) {
+                                      @RequestParam(required = false) Long genreId,
+                                      @RequestParam(required = false) Integer year) {
         log.debug("Запрос на популярные фильмы. Количество={}, жанр={}, год={}", count, genreId, year);
         return filmService.getPopularFilms(count, genreId, year);
     }
@@ -83,5 +84,11 @@ public class FilmController {
     public List<Film> findCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
         log.debug("Запрос на общие фильмы для пользователей id={} и id={}", userId, friendId);
         return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getDirectorFilms(@PathVariable Long directorId, @RequestParam String sortBy) {
+        log.debug("Запрос на получение всех фильмов режиссера с id {}, сортировка: {}", directorId, sortBy);
+        return filmService.getDirectorFilms(directorId, sortBy);
     }
 }
