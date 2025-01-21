@@ -9,22 +9,29 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Director;
 
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.validation.ValidationException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Comparator;
 import java.util.Collections;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,6 +49,12 @@ public class UserService {
     private final LikeStorage likeStorage;
     @Qualifier("filmDbStorage")
     private final FilmStorage filmStorage;
+    @Qualifier("MpaDbStorage")
+    private final MpaStorage mpaStorage;
+    @Qualifier("DirectorDbStorage")
+    private final DirectorStorage directorStorage;
+    @Qualifier("GenreDbStorage")
+    private final GenreStorage genreStorage;
 
     public User createUser(User user) {
         setDefaultNameIfEmpty(user);
@@ -139,14 +152,14 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    public List<Film> getRecommendations(long id) {
-        List<Long> userLikes = likeStorage.getLikesByUserId(id);
+    public List<Film> getRecommendations(long userId) {
+        List<Long> userLikes = likeStorage.getLikesByUserId(userId);
         List<User> users = userStorage.getAllUsers();
 
         // Находим лайки всех пользователей
         Map<Long, List<Long>> usersLikesMap = new HashMap<>();
         for (User user : users) {
-            if (!user.getId().equals(id)) {
+            if (!user.getId().equals(userId)) {
                 List<Long> otherUserLikes = likeStorage.getLikesByUserId(user.getId());
                 usersLikesMap.put(user.getId(), otherUserLikes);
             }
@@ -158,25 +171,46 @@ public class UserService {
                 .map(Map.Entry::getKey)
                 .orElse(null);
 
-        // Рекомендуем фильмы если похожий пользователь найден
+        // Если похожий пользователь найден
         if (similarUserId != null) {
             List<Long> similarUserLikes = likeStorage.getLikesByUserId(similarUserId);
             return similarUserLikes.stream()
                     .filter(filmId -> !userLikes.contains(filmId))
-                    .map(filmStorage::getFilmById)
-                    .flatMap(Optional::stream)
+                    .map(this::enrichFilm) // Обогащаем фильм прямо здесь
                     .toList();
         }
 
         // Если похожих пользователей нет, возвращаем пустой список
         return Collections.emptyList();
-
     }
 
-    // Метод для нахождения пересечений
+    // Метод для обогащения фильма
+    private Film enrichFilm(Long filmId) {
+        Film film = filmStorage.getFilmById(filmId)
+                .orElseThrow(() -> new NoSuchElementException("Фильм с ID " + filmId + " не найден."));
+
+        // Добавляем жанры
+        Set<Genre> genres = genreStorage.getGenresByFilmId(filmId);
+        film.setGenres(genres);
+
+        // Добавляем режиссеров
+        Set<Director> directors = directorStorage.getDirectorsByFilmId(filmId);
+        film.setDirectors(directors);
+
+        // Добавляем MPA
+        if (film.getMpa() != null) {
+            MPA mpa = mpaStorage.getMpaById(film.getMpa().getId())
+                    .orElseThrow(() -> new ValidationException("Некорректный MPA ID: " + film.getMpa().getId()));
+            film.setMpa(mpa);
+        }
+
+        return film;
+    }
+
     private int getIntersectionCount(List<Long> list1, List<Long> list2) {
         Set<Long> set1 = new HashSet<>(list1);
         set1.retainAll(list2);
         return set1.size();
     }
+
 }

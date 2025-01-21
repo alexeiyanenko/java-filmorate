@@ -65,7 +65,7 @@ public class FilmService {
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             savedFilm = genreStorage.updateGenres(savedFilm);
         }
-        // Логика обновления режиссеровБ если они указаны
+        // Логика обновления режиссеров, если они указаны
         if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
             savedFilm = directorStorage.addDirectorToFilm(film);
         }
@@ -90,15 +90,9 @@ public class FilmService {
         Film updatedFilm = filmStorage.updateFilm(film)
                 .orElseThrow(() -> new ValidationException("Не удалось обновить фильм. Проверьте входные данные."));
 
-        // Обновление жанров, если они указаны
-        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            updatedFilm = genreStorage.updateGenres(updatedFilm);
-        }
+        updatedFilm = genreStorage.updateGenres(updatedFilm);
 
-        // Обновление режиссеров, если они указаны
-        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
-            updatedFilm = directorStorage.updateDirectorToFilm(updatedFilm);
-        }
+        updatedFilm = directorStorage.updateDirectorToFilm(updatedFilm);
 
         return Optional.ofNullable(updatedFilm);
     }
@@ -137,26 +131,17 @@ public class FilmService {
         Map<Long, Set<Long>> likesMap = likeStorage.getAllLikes();
         Map<Long, Set<Genre>> genresMap = genreStorage.getGenresForAllFilms();
 
-        // Создаём новую коллекцию фильмов с лайками и жанрами
+        // Создаём новую коллекцию фильмов и обогащаем
         List<Film> enrichedFilms = films.stream()
-                .map(film -> {
-                    // Получаем лайки и жанры для текущего фильма
+                .map(this::enrichFilm) // Обогащаем фильм
+                .peek(film -> {
+                    // Добавляем лайки из карты лайков
                     Set<Long> likes = likesMap.getOrDefault(film.getId(), new HashSet<>());
+                    film.getLikes().addAll(likes);
+
+                    // Устанавливаем жанры из карты жанров (если нужно обновить)
                     Set<Genre> genres = genresMap.getOrDefault(film.getId(), new HashSet<>());
-
-                    // Создаём новый объект фильма с лайками и жанрами
-                    Film enrichedFilm = new Film();
-                    enrichedFilm.setId(film.getId());
-                    enrichedFilm.setName(film.getName());
-                    enrichedFilm.setDescription(film.getDescription());
-                    enrichedFilm.setReleaseDate(film.getReleaseDate());
-                    enrichedFilm.setDuration(film.getDuration());
-                    enrichedFilm.setMpa(film.getMpa());
-                    enrichedFilm.setGenres(genres);
-
-                    enrichedFilm.getLikes().addAll(likes);
-
-                    return enrichedFilm;
+                    film.setGenres(genres);
                 })
                 .toList();
 
