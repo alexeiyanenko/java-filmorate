@@ -93,27 +93,10 @@ public class FilmService {
     }
 
     public Film getFilmById(long filmId) {
-        // Проверка существования фильма
         Film film = filmStorage.getFilmById(filmId)
                 .orElseThrow(() -> new NoSuchElementException("Фильм с ID " + filmId + " не найден."));
 
-        // Получение MPA
-        if (film.getMpa() != null) {
-            MPA mpa = mpaStorage.getMpaById(film.getMpa().getId())
-                    .orElseThrow(() -> new ValidationException("Некорректный MPA ID: " + film.getMpa().getId()));
-            film.setMpa(mpa);
-        }
-
-        // Получение жанров
-        Set<Genre> genres = genreStorage.getGenresByFilmId(film.getId());
-        film.setGenres(genres);
-
-        // Получение режиссеров
-
-        Set<Director> directors = directorStorage.getDirectorsByFilmId(filmId);
-        film.setDirectors(directors);
-
-        return film;
+        return enrichFilm(film);
     }
 
     public void deleteFilmById(Long id) {
@@ -180,7 +163,12 @@ public class FilmService {
         if (query == null || query.isBlank()) {
             throw new IllegalArgumentException("Запрос не может быть пустым.");
         }
-        return filmStorage.findFilmsBySubstring(query, by);
+
+        List<Film> foundFilms = filmStorage.findFilmsBySubstring(query, by);
+
+        return foundFilms.stream()
+                .map(this::enrichFilm)
+                .collect(Collectors.toList());
     }
 
     public List<Film> getCommonFilms(long userId, long friendId) {
@@ -193,11 +181,9 @@ public class FilmService {
 
         List<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
 
-        Map<Long, Set<Genre>> genresMap = genreStorage.getGenresForAllFilms();
-
-        commonFilms.forEach(film -> film.setGenres(genresMap.getOrDefault(film.getId(), new HashSet<>())));
-
-        return commonFilms;
+        return commonFilms.stream()
+                .map(this::enrichFilm)
+                .collect(Collectors.toList());
     }
 
     public void like(long filmId, long userId) {
@@ -250,18 +236,28 @@ public class FilmService {
         if (!directorStorage.isDirectorExist(directorId)) {
             throw new NotFoundException("Режиссер с ID " + directorId + " не найден.");
         }
+
         List<Film> films = filmStorage.getDirectorFilms(directorId, sortBy);
-        for (Film film : films) {
-            if (film.getMpa() != null) {
-                MPA mpa = mpaStorage.getMpaById(film.getMpa().getId())
-                        .orElseThrow(() -> new ValidationException("Некорректный MPA ID: " + film.getMpa().getId()));
-                film.setMpa(mpa);
-            }
-            Set<Genre> genres = genreStorage.getGenresByFilmId(film.getId());
-            film.setGenres(genres);
-            Set<Director> directors = directorStorage.getDirectorsByFilmId(film.getId());
-            film.setDirectors(directors);
+
+        return films.stream()
+                .map(this::enrichFilm)
+                .collect(Collectors.toList());
+    }
+
+    private Film enrichFilm(Film film) {
+        // Обогащаем жанрами
+        film.setGenres(genreStorage.getGenresByFilmId(film.getId()));
+
+        // Обогащаем режиссерами
+        film.setDirectors(directorStorage.getDirectorsByFilmId(film.getId()));
+
+        // Обогащаем MPA
+        if (film.getMpa() != null) {
+            MPA mpa = mpaStorage.getMpaById(film.getMpa().getId())
+                    .orElseThrow(() -> new ValidationException("Некорректный MPA ID: " + film.getMpa().getId()));
+            film.setMpa(mpa);
         }
-        return films;
+
+        return film;
     }
 }

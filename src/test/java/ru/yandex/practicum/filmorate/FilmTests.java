@@ -7,10 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MPA;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.DAOImpl.*;
 
@@ -36,6 +33,7 @@ class FilmTests {
     private final GenreDbStorage genreStorage;
     private final MpaDbStorage mpaStorage;
     private final UserDbStorage userStorage;
+    private final DirectorDbStorage directorStorage;
 
     private User user1;
     private User user2;
@@ -47,6 +45,7 @@ class FilmTests {
 
     @BeforeEach
     public void beforeEach() {
+        // Создаем пользователей
         user1 = new User();
         user1.setEmail("glasha@example.com");
         user1.setLogin("glasha");
@@ -71,17 +70,30 @@ class FilmTests {
         user4.setName("Анна");
         user4.setBirthday(LocalDate.of(1992, 8, 25));
 
-
+        // Сохраняем пользователей
         userStorage.createUser(user1);
         userStorage.createUser(user2);
         userStorage.createUser(user3);
         userStorage.createUser(user4);
 
+        // Создаем рейтинги (MPA)
         MPA mpa4 = new MPA(4L, "R", "лицам до 17 лет просматривать фильм можно только в присутствии взрослого");
         MPA mpa3 = new MPA(3L, "PG-13", "детям до 13 лет просмотр не желателен");
+
+        // Создаем жанры
         Genre genre1 = new Genre(1L, "Комедия");
         Genre genre2 = new Genre(2L, "Драма");
 
+        // Создаем режиссеров
+        Director director1 = new Director(1L, "Christopher Nolan");
+        Director director2 = new Director(2L, "Ridley Scott");
+        Director director3 = new Director(3L, "Aldous Huxley");
+
+        directorStorage.addDirector(director1);
+        directorStorage.addDirector(director2);
+        directorStorage.addDirector(director3);
+
+        // Создаем фильмы с режиссерами
         film1 = new Film();
         film1.setId(1L);
         film1.setName("Interstellar");
@@ -90,6 +102,7 @@ class FilmTests {
         film1.setDuration(169L);
         film1.setGenres(Set.of(genre1, genre2));
         film1.setMpa(mpa4);
+        film1.setDirectors(Set.of(director1));
 
         film2 = new Film();
         film2.setId(2L);
@@ -99,16 +112,19 @@ class FilmTests {
         film2.setDuration(120L);
         film2.setGenres(Set.of(genre2));
         film2.setMpa(mpa3);
+        film2.setDirectors(Set.of(director2));
 
         film3 = new Film();
-        film3.setId(4L);
+        film3.setId(3L);
         film3.setName("Brave New World");
         film3.setDescription("A dystopian society where everyone is conditioned for their role, and individuality is suppressed.");
         film3.setReleaseDate(LocalDate.of(2020, 7, 15));
         film3.setDuration(480L);
         film3.setGenres(Set.of(genre2));
         film3.setMpa(mpa3);
+        film3.setDirectors(Set.of(director3));
 
+        // Сохраняем фильмы
         filmService.addFilm(film1);
         filmService.addFilm(film2);
         filmService.addFilm(film3);
@@ -193,15 +209,43 @@ class FilmTests {
     }
 
     @Test
-    public void testFindFilmsBySubstring() {
-        List<Film> filmsByName = filmStorage.findFilmsBySubstring("Inter", "name");
-        assertThat(filmsByName).hasSize(1).first().hasFieldOrPropertyWithValue("name", "Interstellar");
+    public void testFindFilmsByTitle() {
+        List<Film> filmsByName = filmService.findFilmsBySubstring("Inter", "title");
 
-        List<Film> filmsByDescription = filmStorage.findFilmsBySubstring("space", "description");
-        assertThat(filmsByDescription).hasSize(1).first().hasFieldOrPropertyWithValue("description", "A journey through space and time to save humanity");
+        assertThat(filmsByName)
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("name", "Interstellar");
+    }
 
-        Throwable thrown = catchThrowable(() -> filmStorage.findFilmsBySubstring("test", "invalid"));
-        assertThat(thrown).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("by");
+    @Test
+    public void testFindFilmsByDirector() {
+        List<Film> filmsByDirector = filmService.findFilmsBySubstring("Christopher", "director");
+
+        assertThat(filmsByDirector)
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("name", "Interstellar");
+
+        assertThat(filmsByDirector.get(0).getDirectors())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("name", "Christopher Nolan");
+    }
+
+    @Test
+    public void testFindFilmsByTitleAndDirector() {
+        List<Film> filmsByTitleAndDirector = filmService.findFilmsBySubstring("Inter", "title,director");
+
+        assertThat(filmsByTitleAndDirector)
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("name", "Interstellar");
+
+        assertThat(filmsByTitleAndDirector.get(0).getDirectors())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("name", "Christopher Nolan");
     }
 
     @Test
