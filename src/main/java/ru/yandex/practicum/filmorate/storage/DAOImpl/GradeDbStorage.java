@@ -28,21 +28,6 @@ public class GradeDbStorage implements GradeStorage {
     @Override
     public void addLikeToReview(Long id, Long userId) {
 
-        // Проверяем, есть ли уже такая запись в БД с оценкой LIKE
-        if (isGradeExists(id, userId, "LIKE")) {
-            log.info("Лайк от пользователя {} к отзыву {} уже добавлен", userId, id);
-            return;
-        }
-
-        // Проверяем, есть ли уже такая запись в БД с оценкой DISLIKE
-        if (isGradeExists(id, userId, "DISLIKE")) {
-            log.info("Есть дизлайк от пользователя {} к отзыву {}", userId, id);
-            deleteDislikeFromReview(id, userId);
-        }
-
-        //Увеличиваем рейтинг отзыва на 1
-        addRatingToUseful(id);
-
         String sqlQuery = "INSERT INTO grades (user_id, review_id, grade) VALUES (?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -61,29 +46,11 @@ public class GradeDbStorage implements GradeStorage {
             log.error("Ошибка при добавлении лайка к отзыву: {}", e.getMessage(), e);
             throw new DataAccessException("Ошибка при добавлении лайка к отзыву в БД", e) {
             };
-
         }
-
     }
 
     @Override
     public void addDislikeToReview(Long id, Long userId) {
-
-        //Проверяем, есть ли уже такая запись в БД с оценкой DISLIKE
-        if (isGradeExists(id, userId, "DISLIKE")) {
-            log.info("Дизлайк от пользователя {} к отзыву {} уже добавлен", userId, id);
-            return;
-        }
-
-        //Проверяем, есть ли уже такая запись в БД с оценкой LIKE
-        if (isGradeExists(id, userId, "LIKE")) {
-            log.info("Есть лайк от пользователя {} к отзыву {}", userId, id);
-            deleteLikeFromReview(id, userId);
-        }
-
-        //Уменьшаем рейтинг отзыва на 1
-        decreaseRatingToUseful(id);
-
         String sqlQuery = "INSERT INTO grades (user_id, review_id, grade) VALUES (?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -107,10 +74,6 @@ public class GradeDbStorage implements GradeStorage {
 
     @Override
     public void deleteLikeFromReview(Long id, Long userId) {
-
-        //Уменьшаем рейтинг отзыва на 1, так как лайк будет удалён
-        decreaseRatingToUseful(id);
-
         String sqlQuery = "DELETE FROM grades WHERE review_id = ? AND user_id = ?";
         int rowsDeleted = jdbcTemplate.update(sqlQuery, id, userId);
         if (rowsDeleted == 0) {
@@ -123,9 +86,6 @@ public class GradeDbStorage implements GradeStorage {
     @Override
     public void deleteDislikeFromReview(Long id, Long userId) {
 
-        //Увеличиваем рейтинг отзыва на 1, так как дизлайк будет удалён
-        addRatingToUseful(id);
-
         String sqlQuery = "DELETE FROM grades WHERE review_id = ? AND user_id = ?";
         int rowsDeleted = jdbcTemplate.update(sqlQuery, id, userId);
         if (rowsDeleted == 0) {
@@ -137,19 +97,14 @@ public class GradeDbStorage implements GradeStorage {
 
     public void addRatingToUseful(Long id) {
         String sqlQueryForUseful = "UPDATE reviews SET useful = useful + 1 WHERE review_id = ?";
+
         jdbcTemplate.update(sqlQueryForUseful, id);
     }
 
     public void decreaseRatingToUseful(Long id) {
         String sqlQueryForUseful = "UPDATE reviews SET useful = useful - 1 WHERE review_id = ?";
+
         jdbcTemplate.update(sqlQueryForUseful, id);
-    }
-
-    public boolean isGradeExists(Long id, Long userId, String grade) {
-        List<Grade> grades = getAllGrades();
-
-        return grades.stream()
-            .anyMatch(g -> g.getUserId().equals(userId) && g.getGrade().equals(grade) && g.getReviewId().equals(id));
     }
 
     public List<Grade> getAllGrades() {

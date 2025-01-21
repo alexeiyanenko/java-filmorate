@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +14,8 @@ import ru.yandex.practicum.filmorate.storage.DAOImpl.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.DAOImpl.UserDbStorage;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase
@@ -59,7 +59,9 @@ class EventDbStorageTests {
     public void testCreateEvent() {
         eventStorage.createEvent(user1.getId(), Event.EventType.LIKE, Event.Operation.ADD, 1L);
 
-        assertThat(true).isTrue();
+        List<Event> createdEvents = eventStorage.getAllEventsById(user1.getId());
+
+        Assertions.assertThat(createdEvents).hasSize(1);
     }
 }
 

@@ -27,23 +27,11 @@ import java.util.Optional;
 public class ReviewDbStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    private final UserDbStorage userDbStorage;
-    private final FilmDbStorage filmDbStorage;
 
     @Override
     public Review addReview(Review review) {
         String sqlQuery = "INSERT INTO reviews (content, isPositive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
-        //Проверяем, есть ли пользователь с таким id
-        if (userDbStorage.getUserById(review.getUserId()).isEmpty()) {
-            throw new NotFoundException("Пользователь не найден");
-        }
-
-        //Проверяем, есть ли фильм с таким id
-        if (filmDbStorage.getFilmById(review.getFilmId()).isEmpty()) {
-            throw new NotFoundException("Фильм не найден");
-        }
 
         try {
             jdbcTemplate.update(connection -> {
@@ -98,6 +86,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void deleteReview(Long id) {
+
         String sqlQuery = "DELETE FROM reviews WHERE review_id = ?";
         int rowsDeleted = jdbcTemplate.update(sqlQuery, id);
 
