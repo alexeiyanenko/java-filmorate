@@ -186,9 +186,7 @@ public class FilmService {
         if (!userStorage.isUserExist(userId)) {
             throw new NotFoundException("Пользователь с ID " + userId + " не найден.");
         }
-        if (likeStorage.getLikesByFilmId(filmId).contains((long) userId)) {
-            throw new IllegalStateException("Пользователь " + userId + " уже лайкнул фильм с ID " + filmId);
-        }
+
         likeStorage.like(filmId, userId);
         eventStorage.createEvent(userId, Event.EventType.LIKE, Event.Operation.ADD, filmId);
         log.info("Пользователь с ID {} лайкнул фильм с ID {}", userId, filmId);
