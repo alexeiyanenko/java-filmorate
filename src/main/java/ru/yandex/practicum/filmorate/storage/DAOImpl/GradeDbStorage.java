@@ -36,7 +36,7 @@ public class GradeDbStorage implements GradeStorage {
                 PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"user_id"});
                 stmt.setLong(1, userId);
                 stmt.setLong(2, id);
-                stmt.setString(3, "LIKE");
+                stmt.setString(3, Grade.GradeType.LIKE.name());
                 return stmt;
             }, keyHolder);
 
@@ -59,7 +59,7 @@ public class GradeDbStorage implements GradeStorage {
                 PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"user_id"});
                 stmt.setLong(1, userId);
                 stmt.setLong(2, id);
-                stmt.setString(3, "DISLIKE");
+                stmt.setString(3, Grade.GradeType.DISLIKE.name());
                 return stmt;
             }, keyHolder);
 
@@ -121,11 +121,10 @@ public class GradeDbStorage implements GradeStorage {
 
     private Grade mapRowToReview(ResultSet rs, int rowNum) throws SQLException {
         Grade grade = new Grade();
-
         grade.setGradeId(rs.getLong("grade_id"));
         grade.setUserId(rs.getLong("user_id"));
         grade.setReviewId(rs.getLong("review_id"));
-        grade.setGrade(rs.getString("grade"));
+        grade.setGrade(Grade.GradeType.valueOf(rs.getString("grade")));
         return grade;
     }
 }

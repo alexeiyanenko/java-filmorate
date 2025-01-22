@@ -7,5 +7,11 @@ public class Grade {
     private Long gradeId;
     private Long userId;
     private Long reviewId;
-    private String grade;
+    private GradeType grade;
+
+    public enum GradeType {
+        LIKE,
+        DISLIKE
+    }
 }
+

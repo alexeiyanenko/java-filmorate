@@ -20,13 +20,13 @@ public class GradeService {
     public void addLikeToReview(Long id, Long userId) {
 
         // Проверяем, есть ли уже такая запись в БД с оценкой LIKE
-        if (isGradeExists(id, userId, "LIKE")) {
+        if (isGradeExists(id, userId, Grade.GradeType.LIKE)) {
             log.info("Лайк от пользователя {} к отзыву {} уже добавлен", userId, id);
             return;
         }
 
         // Проверяем, есть ли уже такая запись в БД с оценкой DISLIKE
-        if (isGradeExists(id, userId, "DISLIKE")) {
+        if (isGradeExists(id, userId, Grade.GradeType.DISLIKE)) {
             log.info("Есть дизлайк от пользователя {} к отзыву {}", userId, id);
             deleteDislikeFromReview(id, userId);
         }
@@ -39,7 +39,7 @@ public class GradeService {
 
     public void addDislikeToReview(Long id, Long userId) {
         //Проверяем, есть ли уже такая запись в БД с оценкой DISLIKE
-        if (isGradeExists(id, userId, "DISLIKE")) {
+        if (isGradeExists(id, userId, Grade.GradeType.DISLIKE)) {
 
             log.info("Дизлайк от пользователя {} к отзыву {} уже добавлен", userId, id);
 
@@ -47,7 +47,7 @@ public class GradeService {
         }
 
         //Проверяем, есть ли уже такая запись в БД с оценкой LIKE
-        if (isGradeExists(id, userId, "LIKE")) {
+        if (isGradeExists(id, userId, Grade.GradeType.LIKE)) {
             log.info("Есть лайк от пользователя {} к отзыву {}", userId, id);
             deleteLikeFromReview(id, userId);
         }
@@ -72,7 +72,7 @@ public class GradeService {
         gradeStorage.deleteDislikeFromReview(id, userId);
     }
 
-    public boolean isGradeExists(Long id, Long userId, String grade) {
+    public boolean isGradeExists(Long id, Long userId, Grade.GradeType grade) {
         List<Grade> grades = gradeStorage.getAllGrades();
 
         return grades.stream()
