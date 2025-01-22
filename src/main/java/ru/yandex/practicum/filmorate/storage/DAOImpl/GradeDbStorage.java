@@ -95,18 +95,21 @@ public class GradeDbStorage implements GradeStorage {
         log.info("Удалили дизлайк из отзыва от пользователя: {} -> {}", id, userId);
     }
 
+    @Override
     public void addRatingToUseful(Long id) {
         String sqlQueryForUseful = "UPDATE reviews SET useful = useful + 1 WHERE review_id = ?";
 
         jdbcTemplate.update(sqlQueryForUseful, id);
     }
 
+    @Override
     public void decreaseRatingToUseful(Long id) {
         String sqlQueryForUseful = "UPDATE reviews SET useful = useful - 1 WHERE review_id = ?";
 
         jdbcTemplate.update(sqlQueryForUseful, id);
     }
 
+    @Override
     public List<Grade> getAllGrades() {
 
         String sqlQuery = "SELECT * FROM grades";
