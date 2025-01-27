@@ -1,31 +1,33 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import lombok.NonNull;
 
 @Data
-@Builder
 public class Event {
 
-    @NonNull
     private Long eventId;
-    @NonNull
+    @NotNull
     private Long userId;
-    @NonNull
+    @NotNull
     private Long timestamp;
+    @NotNull
     private EventType eventType;
+    @NotNull
     private Operation operation;
-    @NonNull
+    @NotNull
     private Long entityId;
 
     public enum EventType {
         LIKE,
-        FRIENDSHIP
+        DISLIKE,
+        FRIEND,
+        REVIEW
     }
 
     public enum Operation {
         ADD,
-        DELETE
+        REMOVE,
+        UPDATE
     }
 }

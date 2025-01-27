@@ -7,12 +7,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.MPA;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Director;
+
+import ru.yandex.practicum.filmorate.storage.DAOImpl.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.DAOImpl.GenreDbStorage;
+import ru.yandex.practicum.filmorate.storage.DAOImpl.LikeDbStorage;
+import ru.yandex.practicum.filmorate.storage.DAOImpl.MpaDbStorage;
+import ru.yandex.practicum.filmorate.storage.DAOImpl.UserDbStorage;
+import ru.yandex.practicum.filmorate.storage.DAOImpl.EventDbStorage;
+import ru.yandex.practicum.filmorate.storage.DAOImpl.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.DAOImpl.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,13 +30,13 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @JdbcTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({FilmService.class, FilmDbStorage.class, LikeDbStorage.class, GenreDbStorage.class, MpaDbStorage.class, UserDbStorage.class, EventDbStorage.class})
+@Import({FilmService.class, FilmDbStorage.class, LikeDbStorage.class, GenreDbStorage.class, MpaDbStorage.class, UserDbStorage.class, EventDbStorage.class, DirectorDbStorage.class})
 class FilmTests {
     private final FilmService filmService;
 
@@ -36,14 +45,19 @@ class FilmTests {
     private final GenreDbStorage genreStorage;
     private final MpaDbStorage mpaStorage;
     private final UserDbStorage userStorage;
+    private final DirectorDbStorage directorStorage;
 
     private User user1;
     private User user2;
+    private User user3;
+    private User user4;
     private Film film1;
     private Film film2;
+    private Film film3;
 
     @BeforeEach
     public void beforeEach() {
+        // Создаем пользователей
         user1 = new User();
         user1.setEmail("glasha@example.com");
         user1.setLogin("glasha");
@@ -56,14 +70,42 @@ class FilmTests {
         user2.setName("Тимофей");
         user2.setBirthday(LocalDate.of(1990, 7, 15));
 
+        user3 = new User();
+        user3.setEmail("pavel@example.com");
+        user3.setLogin("pavel");
+        user3.setName("Павел");
+        user3.setBirthday(LocalDate.of(1985, 3, 10));
+
+        user4 = new User();
+        user4.setEmail("anna@example.com");
+        user4.setLogin("anna");
+        user4.setName("Анна");
+        user4.setBirthday(LocalDate.of(1992, 8, 25));
+
+        // Сохраняем пользователей
         userStorage.createUser(user1);
         userStorage.createUser(user2);
+        userStorage.createUser(user3);
+        userStorage.createUser(user4);
 
+        // Создаем рейтинги (MPA)
         MPA mpa4 = new MPA(4L, "R", "лицам до 17 лет просматривать фильм можно только в присутствии взрослого");
         MPA mpa3 = new MPA(3L, "PG-13", "детям до 13 лет просмотр не желателен");
+
+        // Создаем жанры
         Genre genre1 = new Genre(1L, "Комедия");
         Genre genre2 = new Genre(2L, "Драма");
 
+        // Создаем режиссеров
+        Director director1 = new Director(1L, "Christopher Nolan");
+        Director director2 = new Director(2L, "Ridley Scott");
+        Director director3 = new Director(3L, "Aldous Huxley");
+
+        directorStorage.addDirector(director1);
+        directorStorage.addDirector(director2);
+        directorStorage.addDirector(director3);
+
+        // Создаем фильмы с режиссерами
         film1 = new Film();
         film1.setId(1L);
         film1.setName("Interstellar");
@@ -72,6 +114,7 @@ class FilmTests {
         film1.setDuration(169L);
         film1.setGenres(Set.of(genre1, genre2));
         film1.setMpa(mpa4);
+        film1.setDirectors(Set.of(director1));
 
         film2 = new Film();
         film2.setId(2L);
@@ -81,9 +124,22 @@ class FilmTests {
         film2.setDuration(120L);
         film2.setGenres(Set.of(genre2));
         film2.setMpa(mpa3);
+        film2.setDirectors(Set.of(director2));
 
+        film3 = new Film();
+        film3.setId(3L);
+        film3.setName("Brave New World");
+        film3.setDescription("A dystopian society where everyone is conditioned for their role, and individuality is suppressed.");
+        film3.setReleaseDate(LocalDate.of(2020, 7, 15));
+        film3.setDuration(480L);
+        film3.setGenres(Set.of(genre2));
+        film3.setMpa(mpa3);
+        film3.setDirectors(Set.of(director3));
+
+        // Сохраняем фильмы
         filmService.addFilm(film1);
         filmService.addFilm(film2);
+        filmService.addFilm(film3);
     }
 
     @Test
@@ -144,7 +200,7 @@ class FilmTests {
     @Test
     public void testGetAllFilms() {
         List<Film> films = filmStorage.getAllFilms();
-        assertThat(films).hasSize(2);
+        assertThat(films).hasSize(3);
     }
 
     @Test
@@ -165,25 +221,70 @@ class FilmTests {
     }
 
     @Test
-    public void testFindFilmsBySubstring() {
-        List<Film> filmsByName = filmStorage.findFilmsBySubstring("Inter", "name");
-        assertThat(filmsByName).hasSize(1).first().hasFieldOrPropertyWithValue("name", "Interstellar");
+    public void testFindFilmsByTitle() {
+        List<Film> filmsByName = filmService.findFilmsBySubstring("Inter", "title");
 
-        List<Film> filmsByDescription = filmStorage.findFilmsBySubstring("space", "description");
-        assertThat(filmsByDescription).hasSize(1).first().hasFieldOrPropertyWithValue("description", "A journey through space and time to save humanity");
+        assertThat(filmsByName)
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("name", "Interstellar");
+    }
 
-        Throwable thrown = catchThrowable(() -> filmStorage.findFilmsBySubstring("test", "invalid"));
-        assertThat(thrown).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("by");
+    @Test
+    public void testFindFilmsByDirector() {
+        List<Film> filmsByDirector = filmService.findFilmsBySubstring("Christopher", "director");
+
+        assertThat(filmsByDirector)
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("name", "Interstellar");
+
+        assertThat(filmsByDirector.get(0).getDirectors())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("name", "Christopher Nolan");
+    }
+
+    @Test
+    public void testFindFilmsByTitleAndDirector() {
+        List<Film> filmsByTitleAndDirector = filmService.findFilmsBySubstring("Inter", "title,director");
+
+        assertThat(filmsByTitleAndDirector)
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("name", "Interstellar");
+
+        assertThat(filmsByTitleAndDirector.get(0).getDirectors())
+                .hasSize(1)
+                .first()
+                .hasFieldOrPropertyWithValue("name", "Christopher Nolan");
     }
 
     @Test
     public void testGetCommonFilms() {
+        // Лайки пользователей
+        likeStorage.like(film3.getId(), user1.getId());
+        likeStorage.like(film3.getId(), user2.getId());
+
+        likeStorage.like(film2.getId(), user1.getId());
+        likeStorage.like(film2.getId(), user2.getId());
+        likeStorage.like(film2.getId(), user3.getId());
+
         likeStorage.like(film1.getId(), user1.getId());
         likeStorage.like(film1.getId(), user2.getId());
-        likeStorage.like(film2.getId(), user1.getId());
+        likeStorage.like(film1.getId(), user3.getId());
+        likeStorage.like(film1.getId(), user4.getId());
 
+        // Получение общих фильмов
         List<Film> commonFilms = filmStorage.getCommonFilms(user1.getId(), user2.getId());
-        assertThat(commonFilms).hasSize(1).first().hasFieldOrPropertyWithValue("name", "Interstellar");
+
+        // Проверка размеров списка
+        assertThat(commonFilms).hasSize(3);
+
+        // Проверка порядка сортировки по популярности
+        assertThat(commonFilms.get(0).getName()).isEqualTo("Interstellar");
+        assertThat(commonFilms.get(1).getName()).isEqualTo("Silo");
+        assertThat(commonFilms.get(2).getName()).isEqualTo("Brave New World");
     }
 
     @Test
